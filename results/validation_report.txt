@@ -1,0 +1,117 @@
+Verification suite for the stress-weighted telemetry benchmark
+
+[PASS] A01  ASTM E1049 worked example gives ranges 3/4/6/8/9 with counts 0.5/1.5/0.5/1.0/0.5
+[PASS] A02  turning points of the ASTM example are the sequence itself
+[PASS] A03  consecutive duplicates are compressed before turning-point extraction
+[PASS] A04  plateaus at a reversal are reduced to one turning point
+[PASS] A05  a monotone ramp is one half cycle of the full range
+[PASS] A06  a constant signal has no cycles and zero severity
+[PASS] A07  a two-point history is one half cycle
+[PASS] A08  a nested inner loop is extracted as a full cycle: [0,4,1,3,0] -> {2: 1.0, 4: 1.0}
+[PASS] A09  a 5-period sine gives 4.5 equivalent cycles of range 2 and two half cycles of range 1
+[PASS] A10  every reversal is counted once: 2 * sum(counts) = turning points - 1 (200 random histories)
+[PASS] A11  no extracted range exceeds max - min of the history (200 random histories)
+[PASS] A12  the overall range max - min is always counted (200 random histories)
+[PASS] A13  scale invariance: ranges scale with the history, counts unchanged
+[PASS] A14  severity obeys the power law F_m(c x) = c^m F_m(x)
+[PASS] A15  offset invariance: adding a constant does not change ranges or counts
+[PASS] A16  sign symmetry: the mirrored history has the same cycle multiset
+[PASS] A17  amplitude convention: one full cycle of range 2 tau_ref gives F_m = 1 for m = 3, 5, 7
+[PASS] A18  package rainflow equals an independent ASTM E1049 transcription (200 random histories)
+[PASS] A19  cycle counts are always 0.5 or 1.0
+[PASS] A20  empty and single-sample histories produce no cycles
+[PASS] B01  nominal motor inertia J_m = 0.00324 kg m^2 from r = 0.09 m, m_m = 0.8 kg
+[PASS] B02  nominal load inertia J_l = 0.00567 kg m^2 from m_l = 1.4 kg
+[PASS] B03  shaft stiffness k_s = G pi d^4 / (32 L) = 0.62046455 N m/rad
+[PASS] B04  torsional natural frequency f_f = 2.76092 Hz
+[PASS] B05  reference torque T_ref = tau_ref pi d^3 / 16 = 0.0628319 N m
+[PASS] B06  stiff shaft (d_s = 4 mm): k_s = 9.93 N m/rad and f_f = 11.04 Hz
+[PASS] B07  stiff configuration keeps T_ref: T_ref(5 MPa, 4 mm) = T_ref(40 MPa, 2 mm)
+[PASS] B08  exact ZOH step equals an independent RK4 solution (nominal plant)
+[PASS] B09  exact ZOH step equals RK4 for perturbed axis 0 of seed 3201
+[PASS] B10  exact ZOH step equals RK4 for perturbed axis 1 of seed 3201
+[PASS] B11  exact ZOH step equals RK4 for perturbed axis 2 of seed 3201
+[PASS] B12  matrix-exponential semigroup: exp(A 2dt) = exp(A dt)^2
+[PASS] B13  input integral semigroup: B_d(2dt) = A_d B_d + B_d
+[PASS] B14  four 0.5 ms sub-steps compose exactly to one 2 ms step (state and input)
+[PASS] B15  open-loop torsional eigenvalue pair lies within 0.5% of 2 pi f_f
+[PASS] B16  sign conventions: motor torque accelerates the motor, d_L decelerates the load
+[PASS] B17  Van Loan Q_d equals direct Simpson quadrature of exp(As) Q_c exp(A^T s)
+[PASS] B18  discrete process covariances are symmetric positive definite (all axes, both shafts)
+[PASS] C01  LQR gain equals the published K = [3.312653, 0.158591, 1.883500, 0.462091]
+[PASS] C02  discrete closed-loop eigenvalues equal 0.979376 +/- 0.037782i and 0.967839 +/- 0.021856i
+[PASS] C03  continuous Riccati residual is below 1e-9 relative to Q
+[PASS] C04  closed loop is stable for every perturbed axis of every seed (12% and 25% mismatch)
+[PASS] C05  re-synthesised LQR stabilises the stiff shaft (nominal and all perturbed axes)
+[PASS] C06  applied motor torque never exceeds the 0.30 N m saturation (RR, WS, SO traces)
+[PASS] D01  input replay equals the closed form A^n y + sum A^(n-1-l) B u_(s+l)
+[PASS] D02  input replay with zero inputs equals A_d^n y
+[PASS] D03  with a matched model, no noise and no disturbance, replay recovers the true state exactly
+[PASS] D04  Kalman measurement update equals batch Gaussian conditioning
+[PASS] D05  two sequential updates equal one batch update with stacked measurements
+[PASS] D06  Joseph-form covariance stays symmetric positive definite over 500 delayed updates
+[PASS] D07  a measurement update never increases uncertainty: P_prior - P_post is positive semidefinite
+[PASS] D08  Kalman limits: R -> 0 returns the measurement, R -> infinity returns the prior
+[PASS] D09  delayed KF = propagate to the sample time, update, then replay inputs to the arrival step
+[PASS] D10  TU variance curve equals c^T A_d^n R_v (A_d^n)^T c computed with matrix powers
+[PASS] D11  TU variance curve rises monotonically over the first 40 steps (80 ms)
+[PASS] D12  between accepted packets the estimate follows the nominal model under applied inputs
+[PASS] E01  exogenous generation is deterministic for a given seed
+[PASS] E02  exogenous draws do not depend on the scheduling policy (RR, WS, SO, AP, TU)
+[PASS] E03  delays lie in {2..8} steps outside congestion and {15..30} steps inside it
+[PASS] E04  congestion flags equal 2.2 < (t mod 3.2) < 2.7 s in exact arithmetic (6, 10, 20 ms slots)
+[PASS] E05  observed packet-loss count is within 4 sigma of the 2% / 15% channel model (24 seeds)
+[PASS] E06  doubled-delay condition doubles every delay and keeps the loss pattern
+[PASS] E07  mismatch levels share one set of unit draws: deviations scale linearly and stay in bounds
+[PASS] E08  references start at zero and never exceed their amplitudes a = (0.60, 0.35, 0.22) rad
+[PASS] E09  load pulses: onsets within +/-0.15 s of 1 + 0.37 i + 2.4 n, D in [0.25, 0.55] s, amplitude +/-A_i
+[PASS] E10  disturbance = pulses + 0.002 z with z_j = 0.97 z_(j-1) + 0.03 w_j (explicit recursion)
+[PASS] E11  RR requests axes in the cyclic order 0 -> 1 -> 2 in all 24 main runs
+[PASS] E12  6h service guard: between requests no axis waits over 7 slots; all are served by slot 7 (SO-B, WS-B)
+[PASS] E13  AP shares equal the rounded calibration mean and every AP run allocates exactly that split
+[PASS] E14  stale rule: accepted samples are strictly newer per axis; stale ones are not (all RA main runs)
+[PASS] F01  repeated in-process runs are bit-identical (WS, seed 3201)
+[PASS] F02  repeated in-process runs are bit-identical with the delayed Kalman filter
+[PASS] F03  a fresh Python process reproduces the in-process summary exactly
+[PASS] F04  re-run of the 64 s horizon (WS, seed 5201) matches the archived row
+[PASS] F05  re-run of the 6 ms slot condition (WS, seed 4201) matches the archived row
+[PASS] F06  re-run of the stiff shaft (RA, seed 6201) matches the archived row
+[PASS] G01  run counts match the study design: 216 + 360 + 144 + 48 + 72 + 72 = 912, plus 24 calibration
+[PASS] G02  every cell has its block's 24 seeds and a same-seed RR baseline
+[PASS] G03  every run attempted exactly one packet per slot
+[PASS] G04  packet conservation N_attempted = accepted + stale + lost + pending in all 936 runs
+[PASS] G05  packet conservation holds per axis in all 936 runs
+[PASS] G06  per-axis request counts sum to the total in all 936 runs
+[PASS] G07  per-axis F3 values sum to the reported total in all 936 runs
+[PASS] G08  per-axis F5 values sum to the reported total in all 936 runs
+[PASS] G09  per-axis F7 values sum to the reported total in all 936 runs
+[PASS] G10  packet logs have one row per slot and status counts equal the run summaries (936 files)
+[PASS] G11  packet timing: delivered = generation + delay, lost never arrive, pending arrive after the run
+[PASS] G12  alignment flags exist only for accepted packets and their total matches the run summary
+[PASS] H01  SA and RR archived summaries are identical for all 24 main seeds
+[PASS] H02  SA and RR packet ledgers are identical for all 24 main seeds
+[PASS] I01  RR re-run for seed 3201 matches the archived dataset
+[PASS] I02  RR re-run for seed 3202 matches the archived dataset
+[PASS] I03  RR re-run for seed 3203 matches the archived dataset
+[PASS] I04  RR re-run for seed 3204 matches the archived dataset
+[PASS] I05  RR re-run for seed 3205 matches the archived dataset
+[PASS] I06  RR re-run for seed 3206 matches the archived dataset
+[PASS] I07  RR re-run for seed 3207 matches the archived dataset
+[PASS] I08  RR re-run for seed 3208 matches the archived dataset
+[PASS] I09  RR re-run for seed 3209 matches the archived dataset
+[PASS] I10  RR re-run for seed 3210 matches the archived dataset
+[PASS] I11  RR re-run for seed 3211 matches the archived dataset
+[PASS] I12  RR re-run for seed 3212 matches the archived dataset
+[PASS] I13  RR re-run for seed 3213 matches the archived dataset
+[PASS] I14  RR re-run for seed 3214 matches the archived dataset
+[PASS] I15  RR re-run for seed 3215 matches the archived dataset
+[PASS] I16  RR re-run for seed 3216 matches the archived dataset
+[PASS] I17  RR re-run for seed 3217 matches the archived dataset
+[PASS] I18  RR re-run for seed 3218 matches the archived dataset
+[PASS] I19  RR re-run for seed 3219 matches the archived dataset
+[PASS] I20  RR re-run for seed 3220 matches the archived dataset
+[PASS] I21  RR re-run for seed 3221 matches the archived dataset
+[PASS] I22  RR re-run for seed 3222 matches the archived dataset
+[PASS] I23  RR re-run for seed 3223 matches the archived dataset
+[PASS] I24  RR re-run for seed 3224 matches the archived dataset
+114 / 114 checks passed in 13.4 s

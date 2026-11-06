@@ -1,0 +1,15 @@
+### Paired change in F5 relative to RR across operating conditions
+
+| Operating condition | WS dF5 [95% CI] | WS incr. / decr. / tie | RA dF5 [95% CI] | Seeds |
+|---|---|---|---|---|
+| Main benchmark (10 ms slots, 12% mismatch) | +2.69% [+0.52%, +4.88%] | 18 / 6 / 0 | +4.58% [+1.65%, +7.85%] | 24 |
+| Fast telemetry (6 ms slots) | +3.29% [+2.12%, +4.50%] | 21 / 3 / 0 | +5.56% [+2.77%, +8.86%] | 24 |
+| Slow telemetry (20 ms slots) | +7.11% [+4.51%, +10.30%] | 22 / 2 / 0 | +1.37% [-2.75%, +5.91%] | 24 |
+| Doubled channel delay | +4.16% [+0.98%, +7.60%] | 16 / 8 / 0 | +10.82% [+6.61%, +15.59%] | 24 |
+| 25% parameter mismatch | +5.38% [+2.16%, +8.85%] | 20 / 4 / 0 | +11.00% [+6.04%, +18.00%] | 24 |
+| Nominal plant (no mismatch) | +6.16% [+4.68%, +7.67%] | 22 / 2 / 0 | +5.98% [+3.56%, +8.75%] | 24 |
+| Extended 64 s horizon | +4.15% [+2.24%, +6.09%] | 20 / 4 / 0 | - | 24 |
+| Delayed Kalman filter | +2.62% [+0.45%, +4.82%] | 17 / 7 / 0 | - | 24 |
+| Stiff transmission (d_s = 4 mm) | +28.16% [+6.25%, +52.31%] | 14 / 10 / 0 | +234.69% [+148.07%, +345.92%] | 24 |
+
+Each condition is compared with RR on the same seeds and in the same condition. Under the delayed Kalman filter, TU vs RR is reported in key_numbers.json.

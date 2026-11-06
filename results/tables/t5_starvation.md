@@ -1,0 +1,9 @@
+### Telemetry starvation and service guards (main benchmark)
+
+| Policy | Requests (axis 0/1/2) | Max receiver age, mean over seeds (ms) | Max receiver age, worst seed (ms) | Peak abs(tau) mean / worst (MPa) |
+|---|---|---|---|---|
+| RR | 534.0 / 533.0 / 533.0 | 138 / 135 / 136 | 182 / 194 / 192 | 39.4 / 42.9 |
+| RA | 533.0 / 532.7 / 534.3 | 182 / 183 / 185 | 202 / 200 / 206 | 39.7 / 45.0 |
+| WS | 544.3 / 527.9 / 527.8 | 137 / 136 / 136 | 182 / 194 / 192 | 39.9 / 42.8 |
+| SO | 1247.7 / 290.2 / 62.0 | 356 / 1515 / 10317 | 604 / 2164 / 15998 | 177.4 / 340.9 |
+| SO-B | 957.0 / 358.2 / 284.7 | 130 / 192 / 183 | 216 / 236 / 226 | 39.1 / 42.3 |

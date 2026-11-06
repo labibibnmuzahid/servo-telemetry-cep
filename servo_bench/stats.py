@@ -1,0 +1,34 @@
+"""Paired statistics used for every reported comparison (manuscript Section 3.8)."""
+from __future__ import annotations
+
+import numpy as np
+import pandas as pd
+
+BOOT_RESAMPLES = 20_000
+BOOT_SEED = 20260611       # fixed, so every interval is reproducible and independent of call order
+TIE_TOL = 1e-9             # |paired change| below this many percent counts as a tie
+
+
+def paired_pct(policy: pd.Series, base: pd.Series) -> pd.Series:
+    """100 (M_policy,s / M_base,s - 1) per seed; the two series are aligned on seed."""
+    a, b = policy.align(base, join="inner")
+    if len(a) != len(policy) or len(a) != len(base):
+        raise ValueError("paired comparison needs the same seeds on both sides")
+    return 100.0 * (a / b - 1.0)
+
+
+def bootstrap_mean_ci(values, n: int = BOOT_RESAMPLES, seed: int = BOOT_SEED, level: float = 0.95):
+    """Percentile bootstrap interval for the mean of paired values (resampling seeds with replacement)."""
+    x = np.asarray(values, float)
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, x.size, size=(n, x.size))
+    means = x[idx].mean(axis=1)
+    lo, hi = np.percentile(means, [100 * (1 - level) / 2, 100 * (1 + level) / 2])
+    return float(lo), float(hi)
+
+
+def summarize(d: pd.Series) -> dict:
+    lo, hi = bootstrap_mean_ci(d.values)
+    return {"mean": float(d.mean()), "ci_lo": lo, "ci_hi": hi, "n": int(d.size),
+            "n_increase": int((d > TIE_TOL).sum()), "n_decrease": int((d < -TIE_TOL).sum()),
+            "n_tie": int((d.abs() <= TIE_TOL).sum())}

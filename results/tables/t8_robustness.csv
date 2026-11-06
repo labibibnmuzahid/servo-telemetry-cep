@@ -1,0 +1,10 @@
+experiment,condition,label,WS_mean,WS_lo,WS_hi,WS_n_increase,WS_n_decrease,WS_n_tie,RA_mean,RA_lo,RA_hi,RA_n_increase,RA_n_decrease,RA_n_tie,TU_mean,TU_lo,TU_hi,TU_n_increase,TU_n_decrease,TU_n_tie
+main,baseline,"Main benchmark (10 ms slots, 12% mismatch)",2.685220863,0.5206767033,4.87563199,18,6,0,4.581019961,1.650282441,7.846439901,17,7,0,0,0,0,0,0,24
+operating,slot6ms,Fast telemetry (6 ms slots),3.286458977,2.124751354,4.502539555,21,3,0,5.560095254,2.774223284,8.863494681,20,4,0,,,,,,
+operating,slot20ms,Slow telemetry (20 ms slots),7.112996943,4.513160157,10.29594632,22,2,0,1.367624525,-2.753316495,5.909704882,13,11,0,,,,,,
+operating,delay2x,Doubled channel delay,4.163844626,0.9794735341,7.59808403,16,8,0,10.82335654,6.614269338,15.58991532,22,2,0,,,,,,
+operating,mismatch25,25% parameter mismatch,5.377763104,2.15612595,8.854337523,20,4,0,11.00245989,6.043607767,18.00345437,22,2,0,,,,,,
+operating,mismatch0,Nominal plant (no mismatch),6.159205315,4.675857091,7.671754163,22,2,0,5.980429115,3.555417851,8.747134511,22,2,0,,,,,,
+long_horizon,t64s,Extended 64 s horizon,4.150052848,2.235907631,6.092605947,20,4,0,,,,,,,,,,,,
+kalman,delayed_kf,Delayed Kalman filter,2.62100631,0.4540969214,4.820930218,17,7,0,,,,,,,0,0,0,0,0,24
+stiff,ds4mm,Stiff transmission (d_s = 4 mm),28.15745802,6.251260411,52.30839086,14,10,0,234.6884058,148.0744739,345.9166734,24,0,0,,,,,,

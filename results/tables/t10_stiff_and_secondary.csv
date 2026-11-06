@@ -1,0 +1,2 @@
+stiff_ks_Nm_per_rad,stiff_ff_Hz,stiff_F5_RR,stiff_F5_WS,stiff_F5_RA,WS_dpeak_tau_mean,WS_dpeak_tau_lo,WS_dpeak_tau_hi,WS_deffort_mean,WS_deffort_lo,WS_deffort_hi,WS_minus_RR_rmse_rad
+9.927432785,11.04367015,1.246692301,1.622299911,4.217581868,1.211294435,0.2728599982,2.187132391,-0.1957845854,-0.6722818222,0.3329030748,-2.639837436e-05

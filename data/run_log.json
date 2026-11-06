@@ -1,0 +1,12 @@
+{
+  "package_version": "1.0.0",
+  "python": "3.13.18",
+  "platform": "Linux-6.18.44-fc-v242-x86_64-with-glibc2.39",
+  "numpy": "2.5.3",
+  "pandas": "3.0.5",
+  "scipy": "1.18.1",
+  "workers": 2,
+  "evaluation_runs": 912,
+  "calibration_runs": 24,
+  "wall_time_936_runs_s": 97.4
+}

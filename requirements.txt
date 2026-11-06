@@ -1,0 +1,6 @@
+# Versions used to build the archived data/ and results/ (Python 3.13.18).
+# Any Python >= 3.11 with recent versions of these packages runs the code; see README section 10.
+numpy==2.5.3
+scipy==1.18.1
+pandas==3.0.5
+matplotlib==3.11.2

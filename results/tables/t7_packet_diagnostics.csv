@@ -1,0 +1,2 @@
+threshold_mNm,accepted_axis0_RR,accepted_axis0_WS,high_torsion_RR,high_torsion_WS,aligned_high_RR,aligned_high_WS,aligned_high_diff_mean,aligned_high_diff_lo,aligned_high_diff_hi,aligned_fraction_RR,aligned_fraction_WS,abs_torque_est_err_mNm_RR,abs_torque_est_err_mNm_WS
+25.90301346,510.125,520.5,102.0416667,112.9583333,80.45833333,90.16666667,9.708333333,7.791666667,11.70833333,0.788485096,0.7982294356,1.082815488,1.127479188

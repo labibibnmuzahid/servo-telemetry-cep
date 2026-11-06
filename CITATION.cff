@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this replication package, please cite it as below."
+type: dataset
+title: "Replication package: Stress-weighted telemetry and stress-cycle severity in flexible servo axes"
+version: "1"
+doi: 10.17632/hbcy5m7rrk.1
+license: CC-BY-4.0
+authors:
+  - family-names: "Al Junayed"
+    given-names: "Abdullah"
+    alias: "Mahin"
+    email: junayed.mahin@iubat.education
+    affiliation: "International University of Business Agriculture and Technology (IUBAT)"
+  - family-names: "Ibn Muzahid"
+    given-names: "Labib"
+    email: labib@iubat.education
+    affiliation: "International University of Business Agriculture and Technology (IUBAT)"
+keywords:
+  - networked control
+  - sensor scheduling
+  - flexible drive
+  - rainflow counting
+  - stress cycles
+  - cyber-physical systems
+abstract: >-
+  Simulation code, archived results of 936 runs (912 evaluation and 24 calibration),
+  per-packet telemetry logs, a 114-check verification suite and analysis scripts for a
+  benchmark of stress-weighted telemetry scheduling in three flexible two-inertia servo axes
+  sharing a delayed, lossy uplink, evaluated with rainflow-counted stress-cycle severity.
