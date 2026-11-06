@@ -23,7 +23,7 @@ keywords:
   - stress cycles
   - cyber-physical systems
 abstract: >-
-  Simulation code, archived results of 936 runs (912 evaluation and 24 calibration),
-  per-packet telemetry logs, a 114-check verification suite and analysis scripts for a
+  Simulation code, archived results of 3,744 runs (3,648 evaluation and 96 calibration),
+  per-packet telemetry logs, a 186-check verification suite and analysis scripts for a
   benchmark of stress-weighted telemetry scheduling in three flexible two-inertia servo axes
   sharing a delayed, lossy uplink, evaluated with rainflow-counted stress-cycle severity.

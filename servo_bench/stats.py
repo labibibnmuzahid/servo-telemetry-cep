@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from scipy.stats import binomtest
 
 BOOT_RESAMPLES = 20_000
 BOOT_SEED = 20260611       # fixed, so every interval is reproducible and independent of call order
@@ -29,6 +30,13 @@ def bootstrap_mean_ci(values, n: int = BOOT_RESAMPLES, seed: int = BOOT_SEED, le
 
 def summarize(d: pd.Series) -> dict:
     lo, hi = bootstrap_mean_ci(d.values)
-    return {"mean": float(d.mean()), "ci_lo": lo, "ci_hi": hi, "n": int(d.size),
-            "n_increase": int((d > TIE_TOL).sum()), "n_decrease": int((d < -TIE_TOL).sum()),
-            "n_tie": int((d.abs() <= TIE_TOL).sum())}
+    up, down = int((d > TIE_TOL).sum()), int((d < -TIE_TOL).sum())
+    return {"mean": float(d.mean()), "median": float(d.median()), "ci_lo": lo, "ci_hi": hi, "n": int(d.size),
+            "n_increase": up, "n_decrease": down, "n_tie": int((d.abs() <= TIE_TOL).sum()),
+            "sign_p": sign_test(up, down)}
+
+
+def sign_test(n_up: int, n_down: int) -> float:
+    """Exact two-sided sign test (binomial, p = 0.5) on the seeds that are not ties."""
+    n = n_up + n_down
+    return 1.0 if n == 0 else float(binomtest(n_up, n, 0.5, alternative="two-sided").pvalue)

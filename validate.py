@@ -1,4 +1,4 @@
-"""Automated verification suite: 114 numerical and physical assertions (manuscript Section 3.9).
+"""Automated verification suite: 186 numerical and physical assertions (manuscript Section 3.9).
 
 Groups
   A (20) rainflow extraction: hand-countable benchmarks, invariances, independent re-implementation
@@ -7,9 +7,9 @@ Groups
   D (12) estimators: input replay, Kalman update vs batch Gaussian conditioning, covariance health
   E (14) exogenous processes, channel and scheduler logic
   F  (6) deterministic reproducibility (in-process, fresh process, archived rows)
-  G (12) experiment design, packet conservation and per-axis summation over all 936 runs
+  G (12) experiment design, packet conservation and per-axis summation over all 3,744 runs
   H  (2) algebraic equivalence of SA and RR
-  I (24) re-run of the RR baseline for all 24 main seeds against the archived dataset
+  I (96) re-run of the RR baseline for all 96 main seeds against the archived dataset
 
 Requires the archive produced by run_experiments.py (default ./data).
 Writes results/validation_report.txt; exits with status 1 if any check fails.
@@ -585,18 +585,29 @@ def _():
     return np.allclose(out, m, rtol=1e-9, atol=1e-14)
 
 
-@check("D10", "TU variance curve equals c^T A_d^n R_v (A_d^n)^T c computed with matrix powers")
+@check("D10", "TU curve equals c^T (A^n R_v A^nT + sum_l A^l Q_d A^lT) c computed with matrix powers (all axes)")
 def _():
-    V = torque_variance_curve(AD_N, RV, KS, 60)
     c = KS * np.array([1.0, 0, -1.0, 0])
-    ref = [c @ np.linalg.matrix_power(AD_N, n) @ RV @ np.linalg.matrix_power(AD_N, n).T @ c for n in range(61)]
-    return np.allclose(V, ref, rtol=1e-10)
+    ok = True
+    for i in range(3):
+        Q = kf_process_covariance(i, JM, JL, KS)
+        V = torque_variance_curve(AD_N, RV, KS, 60, Q)
+        ref = []
+        for n in range(61):
+            An = np.linalg.matrix_power(AD_N, n)
+            P = An @ RV @ An.T + sum(np.linalg.matrix_power(AD_N, l) @ Q @ np.linalg.matrix_power(AD_N, l).T
+                                     for l in range(n))
+            ref.append(c @ P @ c)
+        ok &= np.allclose(V, ref, rtol=1e-9)
+    return ok
 
 
-@check("D11", "TU variance curve rises monotonically over the first 40 steps (80 ms)")
+@check("D11", "TU curves: process noise only adds uncertainty, and axes with larger load pulses grow faster")
 def _():
-    V = torque_variance_curve(AD_N, RV, KS, 40)
-    return bool(np.all(np.diff(V) > 0))
+    V0 = torque_variance_curve(AD_N, RV, KS, 400)
+    Vs = [torque_variance_curve(AD_N, RV, KS, 400, kf_process_covariance(i, JM, JL, KS)) for i in range(3)]
+    return (all(np.all(V >= V0 - 1e-18) for V in Vs)
+            and np.all(Vs[0][1:] > Vs[1][1:]) and np.all(Vs[1][1:] > Vs[2][1:]))
 
 
 @check("D12", "between accepted packets the estimate follows the nominal model under applied inputs")
@@ -657,7 +668,7 @@ def _():
     return ok
 
 
-@check("E05", "observed packet-loss count is within 4 sigma of the 2% / 15% channel model (24 seeds)")
+@check("E05", "observed packet-loss count is within 4 sigma of the 2% / 15% channel model (all main seeds)")
 def _():
     obs = exp = var = 0.0
     for s in C.SEEDS_MAIN:
@@ -720,7 +731,7 @@ def _():
     return np.max(np.abs(ex.dist - pulse - 0.002 * z)) < 1e-15
 
 
-@check("E11", "RR requests axes in the cyclic order 0 -> 1 -> 2 in all 24 main runs")
+@check("E11", "RR requests axes in the cyclic order 0 -> 1 -> 2 in every main run")
 def _():
     df = runs()
     return all((packets(r).axis.values == np.arange(1600) % 3).all()
@@ -817,14 +828,15 @@ def _():
 
 
 # ============================================================================ G: design, conservation, summation (12)
-@check("G01", "run counts match the study design: 216 + 360 + 144 + 48 + 72 + 72 = 912, plus 24 calibration")
+@check("G01", "run counts match the design: 96 x (9 + 15 + 6 + 2 + 3 + 3) = 3648 runs, plus 96 calibration")
 def _():
     n = runs().groupby("experiment").size().to_dict()
-    return n == {"main": 216, "operating": 360, "rho_sweep": 144, "long_horizon": 48, "stiff": 72,
-                 "kalman": 72} and len(runs()) == 912 and len(calib()) == 24
+    k = C.N_SEEDS
+    return n == {"main": 9 * k, "operating": 15 * k, "rho_sweep": 6 * k, "long_horizon": 2 * k, "stiff": 3 * k,
+                 "kalman": 3 * k} and len(runs()) == 38 * k and len(calib()) == k and k == 96
 
 
-@check("G02", "every cell has its block's 24 seeds and a same-seed RR baseline")
+@check("G02", "every cell has its block's 96 seeds and a same-seed RR baseline")
 def _():
     df = runs()
     block = {"main": C.SEEDS_MAIN, "operating": C.SEEDS_OPERATING, "rho_sweep": C.SEEDS_MAIN,
@@ -847,20 +859,20 @@ def _():
     return ok
 
 
-@check("G04", "packet conservation N_attempted = accepted + stale + lost + pending in all 936 runs")
+@check("G04", "packet conservation N_attempted = accepted + stale + lost + pending in all 3,744 runs")
 def _():
     d = all_runs()
     return bool((d.attempted == d.accepted + d.stale + d.lost + d.pending).all())
 
 
-@check("G05", "packet conservation holds per axis in all 936 runs")
+@check("G05", "packet conservation holds per axis in all 3,744 runs")
 def _():
     d = all_runs()
     return all(((d[f"attempted_axis{i}"] == d[f"accepted_axis{i}"] + d[f"stale_axis{i}"] + d[f"lost_axis{i}"]
                  + d[f"pending_axis{i}"])).all() for i in range(3))
 
 
-@check("G06", "per-axis request counts sum to the total in all 936 runs")
+@check("G06", "per-axis request counts sum to the total in all 3,744 runs")
 def _():
     d = all_runs()
     return bool((d.attempted == d.attempted_axis0 + d.attempted_axis1 + d.attempted_axis2).all())
@@ -872,10 +884,10 @@ for _m in (3, 5, 7):
             d = all_runs()
             return bool(np.allclose(d[f"F{m}"], d[f"F{m}_axis0"] + d[f"F{m}_axis1"] + d[f"F{m}_axis2"], rtol=1e-10))
         return fn
-    check(f"G{4 + _m // 2 + 2:02d}", f"per-axis F{_m} values sum to the reported total in all 936 runs")(_mk())
+    check(f"G{4 + _m // 2 + 2:02d}", f"per-axis F{_m} values sum to the reported total in all 3,744 runs")(_mk())
 
 
-@check("G10", "packet logs have one row per slot and status counts equal the run summaries (936 files)")
+@check("G10", "packet logs have one row per slot and status counts equal the run summaries (3,744 files)")
 def _():
     for _, r in all_runs().iterrows():
         pk = packets(r)
@@ -921,7 +933,7 @@ def _():
 
 
 # ============================================================================ H: SA = RR (2)
-@check("H01", "SA and RR archived summaries are identical for all 24 main seeds")
+@check("H01", "SA and RR archived summaries are identical for all 96 main seeds")
 def _():
     df = runs()
     cols = [c for c in df.columns if c not in NUMERIC_SKIP | {"policy"}]
@@ -930,13 +942,13 @@ def _():
     return a.equals(b)
 
 
-@check("H02", "SA and RR packet ledgers are identical for all 24 main seeds")
+@check("H02", "SA and RR packet ledgers are identical for all 96 main seeds")
 def _():
     return all(packets(row_of("main", "baseline", "SA", s)).equals(packets(row_of("main", "baseline", "RR", s)))
                for s in C.SEEDS_MAIN)
 
 
-# ============================================================================ I: archived baseline (24)
+# ============================================================================ I: archived baseline (96)
 for _k, _s in enumerate(C.SEEDS_MAIN):
     def _mk(s=_s):
         def fn():

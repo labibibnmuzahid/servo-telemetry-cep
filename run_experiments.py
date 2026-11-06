@@ -1,10 +1,11 @@
-"""Run the 24 AP-calibration runs and the 912 evaluation runs (manuscript Table 3).
+"""Run the AP-calibration runs and the evaluation runs of manuscript Table 3
+(96 paired seeds per cell: 96 calibration runs and 3,648 evaluation runs).
 
 Outputs (under --out, default ./data):
   calibration/calibration_runs.csv   one row per calibration run (WS, seeds 2201-2224)
   calibration/ap_shares.json         AP target shares derived from the calibration runs
-  runs.csv                           one row per evaluation run (912 rows)
-  packets/<experiment>/<run_id>.csv.gz   per-packet ledger of every run (936 files)
+  runs.csv                           one row per evaluation run (3,648 rows)
+  packets/<experiment>/<run_id>.csv.gz   per-packet ledger of every run (3,744 files)
   traces/main_baseline_<policy>_s3201.csv.gz   example time series used for a figure
   run_log.json                       software versions, worker count and wall time
 
@@ -61,7 +62,7 @@ def run_batch(cfgs, out, workers):
         rows = []
         for i, row in enumerate(pool.imap(run_one, jobs, chunksize=4)):
             rows.append(row)
-            if (i + 1) % 100 == 0:
+            if (i + 1) % 500 == 0:
                 print(f"  {i + 1}/{len(jobs)} runs", flush=True)
         return rows
 
@@ -99,7 +100,7 @@ def main() -> None:
     os.makedirs(os.path.join(out, "calibration"), exist_ok=True)
     t0 = time.time()
 
-    print("AP calibration: 24 WS runs on seeds 2201-2224", flush=True)
+    print(f"AP calibration: {len(C.SEEDS_CALIBRATION)} WS runs on seeds {C.SEEDS_CALIBRATION[0]}-{C.SEEDS_CALIBRATION[-1]}", flush=True)
     cal = pd.DataFrame(run_batch(C.calibration_configs(), out, a.workers))
     cal.to_csv(os.path.join(out, "calibration", "calibration_runs.csv"), index=False, float_format="%.12g")
     share = np.stack([cal[f"attempted_axis{i}"] / cal["attempted"] for i in range(C.N_AXES)], axis=1)
@@ -114,7 +115,7 @@ def main() -> None:
     print(f"  AP shares {shares} -> allocation {info['ap_allocation_per_run']}", flush=True)
 
     cfgs = C.evaluation_configs(shares)
-    assert len(cfgs) == 912, len(cfgs)
+    assert len(cfgs) == 38 * C.N_SEEDS, len(cfgs)
     print(f"Evaluation: {len(cfgs)} runs on {a.workers} worker(s)", flush=True)
     rows = run_batch(cfgs, out, a.workers)
     pd.DataFrame(rows).to_csv(os.path.join(out, "runs.csv"), index=False, float_format="%.12g")
@@ -125,10 +126,10 @@ def main() -> None:
            "numpy": np.__version__, "pandas": pd.__version__,
            "scipy": __import__("scipy").__version__, "workers": a.workers,
            "evaluation_runs": len(cfgs), "calibration_runs": len(cal),
-           "wall_time_936_runs_s": round(elapsed_runs, 1)}
+           "wall_time_all_runs_s": round(elapsed_runs, 1)}
     with open(os.path.join(out, "run_log.json"), "w") as f:
         json.dump(log, f, indent=2)
-    print(f"Done: 936 runs in {elapsed_runs:.1f} s", flush=True)
+    print(f"Done: {len(cfgs) + len(cal)} runs in {elapsed_runs:.1f} s", flush=True)
 
 
 if __name__ == "__main__":

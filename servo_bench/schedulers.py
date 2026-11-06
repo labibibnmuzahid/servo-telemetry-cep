@@ -13,14 +13,21 @@ import numpy as np
 from . import config as C
 
 
-def torque_variance_curve(Ad: np.ndarray, Rv: np.ndarray, ks: float, n_max: int) -> np.ndarray:
-    """V(n) = c^T P_n c with P_0 = R_v and P_{n+1} = A_d P_n A_d^T (open-loop growth from R_v)."""
+def torque_variance_curve(Ad: np.ndarray, Rv: np.ndarray, ks: float, n_max: int,
+                          Qd: np.ndarray | None = None) -> np.ndarray:
+    """Open-loop variance of the elastic torque n steps after a measurement.
+
+    V(n) = c^T P_n c, c = k_s [1, 0, -1, 0], with P_0 = R_v and P_(n+1) = A_d P_n A_d^T + Q_d.
+    TU uses the per-axis Q_d,i of Eq. (10) (the delayed-KF process covariance); with Q_d = 0
+    the curve reduces to pure propagation of R_v.
+    """
     c = ks * np.array([1.0, 0.0, -1.0, 0.0])
     V = np.empty(n_max + 1)
     P = Rv.copy()
+    Q = np.zeros_like(Rv) if Qd is None else Qd
     for n in range(n_max + 1):
         V[n] = c @ P @ c
-        P = Ad @ P @ Ad.T
+        P = Ad @ P @ Ad.T + Q
     return V
 
 
@@ -41,8 +48,9 @@ class Scheduler:
             self.p = np.asarray(ap_shares, float)
         if policy == "TU":
             if tu_curve is None:
-                raise ValueError("TU needs the torque variance curve")
-            self.V = tu_curve
+                raise ValueError("TU needs the per-axis torque variance curves")
+            self.V = np.asarray(tu_curve)          # (n_axes, n_max + 1)
+            self._ax = np.arange(self.V.shape[0])
 
     def stress_weight(self, xh: np.ndarray) -> np.ndarray:
         """R_i = 1 + rho (|T_hat_i| / T_ref)^3 with T_hat_i = k_s (q_m_hat - q_l_hat) (Eq. 12)."""
@@ -69,5 +77,5 @@ class Scheduler:
         if pol == "AP":
             return int(np.argmax((k + 1) * self.p - n_alloc))
         if pol == "TU":
-            return int(np.argmax(self.V[(j - s_req)]))
+            return int(np.argmax(self.V[self._ax, j - s_req]))
         raise AssertionError(pol)

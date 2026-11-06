@@ -71,11 +71,12 @@ KF_INPUT_NOISE = 1e-5
 POLICIES = ("RR", "SA", "RA", "SO", "WS", "WS-B", "SO-B", "AP", "TU")
 RHO_SWEEP = (0.5, 1.5, 3.0, 12.0, 24.0, 48.0)
 
-SEEDS_MAIN = tuple(range(3201, 3225))
-SEEDS_OPERATING = tuple(range(4201, 4225))
-SEEDS_LONG = tuple(range(5201, 5225))
-SEEDS_STIFF = tuple(range(6201, 6225))
-SEEDS_CALIBRATION = tuple(range(2201, 2225))
+N_SEEDS = 96               # paired seeds per experimental cell (version 2; version 1 used 24)
+SEEDS_MAIN = tuple(range(3201, 3201 + N_SEEDS))
+SEEDS_OPERATING = tuple(range(4201, 4201 + N_SEEDS))
+SEEDS_LONG = tuple(range(5201, 5201 + N_SEEDS))
+SEEDS_STIFF = tuple(range(6201, 6201 + N_SEEDS))
+SEEDS_CALIBRATION = tuple(range(2201, 2201 + N_SEEDS))
 
 
 @dataclass(frozen=True)
@@ -118,20 +119,20 @@ def _cfg(**kw) -> RunConfig:
 
 
 def calibration_configs() -> list[RunConfig]:
-    """24 WS runs on independent seeds used to derive the fixed AP target shares."""
+    """WS runs on independent calibration seeds used to derive the fixed AP target shares."""
     return [_cfg(experiment="calibration", condition="baseline", policy="WS", seed=s)
             for s in SEEDS_CALIBRATION]
 
 
 def evaluation_configs(ap_shares: tuple) -> list[RunConfig]:
-    """The 912 evaluation runs of manuscript Table 3."""
+    """The evaluation runs of manuscript Table 3 (38 cells x N_SEEDS seeds)."""
     runs: list[RunConfig] = []
-    # Main benchmark: 9 policies x 24 seeds = 216
+    # Main benchmark: 9 policies
     for p in POLICIES:
         for s in SEEDS_MAIN:
             runs.append(_cfg(experiment="main", condition="baseline", policy=p, seed=s,
                              ap_shares=ap_shares if p == "AP" else None))
-    # Operating conditions: RR, RA, WS x 5 conditions x 24 seeds = 360
+    # Operating conditions: RR, RA, WS x 5 conditions
     conditions = {
         "slot6ms": dict(slot_ms=6.0),
         "slot20ms": dict(slot_ms=20.0),
@@ -143,20 +144,20 @@ def evaluation_configs(ap_shares: tuple) -> list[RunConfig]:
         for p in ("RR", "RA", "WS"):
             for s in SEEDS_OPERATING:
                 runs.append(_cfg(experiment="operating", condition=cond, policy=p, seed=s, **kw))
-    # Stress-weight sweep: WS at 6 gains x 24 seeds = 144 (RR baseline reused from main)
+    # Stress-weight sweep: WS at 6 gains (RR baseline reused from main)
     for rho in RHO_SWEEP:
         for s in SEEDS_MAIN:
             runs.append(_cfg(experiment="rho_sweep", condition=f"rho{rho:g}", policy="WS", seed=s, rho=rho))
-    # Long horizon: RR, WS at 64 s x 24 seeds = 48
+    # Long horizon: RR, WS at 64 s
     for p in ("RR", "WS"):
         for s in SEEDS_LONG:
             runs.append(_cfg(experiment="long_horizon", condition="t64s", policy=p, seed=s, t_run=64.0))
-    # Stiff transmission: RR, RA, WS with d_s = 4 mm, tau_ref = 5 MPa x 24 seeds = 72
+    # Stiff transmission: RR, RA, WS with d_s = 4 mm, tau_ref = 5 MPa
     for p in ("RR", "RA", "WS"):
         for s in SEEDS_STIFF:
             runs.append(_cfg(experiment="stiff", condition="ds4mm", policy=p, seed=s,
                              shaft_diameter=0.004, tau_ref=5e6))
-    # Estimator robustness: RR, WS, TU with the delayed Kalman filter x 24 seeds = 72
+    # Estimator robustness: RR, WS, TU with the delayed Kalman filter
     for p in ("RR", "WS", "TU"):
         for s in SEEDS_MAIN:
             runs.append(_cfg(experiment="kalman", condition="delayed_kf", policy=p, seed=s, estimator="kf"))

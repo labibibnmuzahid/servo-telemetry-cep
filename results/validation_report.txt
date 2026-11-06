@@ -53,20 +53,20 @@ Verification suite for the stress-weighted telemetry benchmark
 [PASS] D07  a measurement update never increases uncertainty: P_prior - P_post is positive semidefinite
 [PASS] D08  Kalman limits: R -> 0 returns the measurement, R -> infinity returns the prior
 [PASS] D09  delayed KF = propagate to the sample time, update, then replay inputs to the arrival step
-[PASS] D10  TU variance curve equals c^T A_d^n R_v (A_d^n)^T c computed with matrix powers
-[PASS] D11  TU variance curve rises monotonically over the first 40 steps (80 ms)
+[PASS] D10  TU curve equals c^T (A^n R_v A^nT + sum_l A^l Q_d A^lT) c computed with matrix powers (all axes)
+[PASS] D11  TU curves: process noise only adds uncertainty, and axes with larger load pulses grow faster
 [PASS] D12  between accepted packets the estimate follows the nominal model under applied inputs
 [PASS] E01  exogenous generation is deterministic for a given seed
 [PASS] E02  exogenous draws do not depend on the scheduling policy (RR, WS, SO, AP, TU)
 [PASS] E03  delays lie in {2..8} steps outside congestion and {15..30} steps inside it
 [PASS] E04  congestion flags equal 2.2 < (t mod 3.2) < 2.7 s in exact arithmetic (6, 10, 20 ms slots)
-[PASS] E05  observed packet-loss count is within 4 sigma of the 2% / 15% channel model (24 seeds)
+[PASS] E05  observed packet-loss count is within 4 sigma of the 2% / 15% channel model (all main seeds)
 [PASS] E06  doubled-delay condition doubles every delay and keeps the loss pattern
 [PASS] E07  mismatch levels share one set of unit draws: deviations scale linearly and stay in bounds
 [PASS] E08  references start at zero and never exceed their amplitudes a = (0.60, 0.35, 0.22) rad
 [PASS] E09  load pulses: onsets within +/-0.15 s of 1 + 0.37 i + 2.4 n, D in [0.25, 0.55] s, amplitude +/-A_i
 [PASS] E10  disturbance = pulses + 0.002 z with z_j = 0.97 z_(j-1) + 0.03 w_j (explicit recursion)
-[PASS] E11  RR requests axes in the cyclic order 0 -> 1 -> 2 in all 24 main runs
+[PASS] E11  RR requests axes in the cyclic order 0 -> 1 -> 2 in every main run
 [PASS] E12  6h service guard: between requests no axis waits over 7 slots; all are served by slot 7 (SO-B, WS-B)
 [PASS] E13  AP shares equal the rounded calibration mean and every AP run allocates exactly that split
 [PASS] E14  stale rule: accepted samples are strictly newer per axis; stale ones are not (all RA main runs)
@@ -76,20 +76,20 @@ Verification suite for the stress-weighted telemetry benchmark
 [PASS] F04  re-run of the 64 s horizon (WS, seed 5201) matches the archived row
 [PASS] F05  re-run of the 6 ms slot condition (WS, seed 4201) matches the archived row
 [PASS] F06  re-run of the stiff shaft (RA, seed 6201) matches the archived row
-[PASS] G01  run counts match the study design: 216 + 360 + 144 + 48 + 72 + 72 = 912, plus 24 calibration
-[PASS] G02  every cell has its block's 24 seeds and a same-seed RR baseline
+[PASS] G01  run counts match the design: 96 x (9 + 15 + 6 + 2 + 3 + 3) = 3648 runs, plus 96 calibration
+[PASS] G02  every cell has its block's 96 seeds and a same-seed RR baseline
 [PASS] G03  every run attempted exactly one packet per slot
-[PASS] G04  packet conservation N_attempted = accepted + stale + lost + pending in all 936 runs
-[PASS] G05  packet conservation holds per axis in all 936 runs
-[PASS] G06  per-axis request counts sum to the total in all 936 runs
-[PASS] G07  per-axis F3 values sum to the reported total in all 936 runs
-[PASS] G08  per-axis F5 values sum to the reported total in all 936 runs
-[PASS] G09  per-axis F7 values sum to the reported total in all 936 runs
-[PASS] G10  packet logs have one row per slot and status counts equal the run summaries (936 files)
+[PASS] G04  packet conservation N_attempted = accepted + stale + lost + pending in all 3,744 runs
+[PASS] G05  packet conservation holds per axis in all 3,744 runs
+[PASS] G06  per-axis request counts sum to the total in all 3,744 runs
+[PASS] G07  per-axis F3 values sum to the reported total in all 3,744 runs
+[PASS] G08  per-axis F5 values sum to the reported total in all 3,744 runs
+[PASS] G09  per-axis F7 values sum to the reported total in all 3,744 runs
+[PASS] G10  packet logs have one row per slot and status counts equal the run summaries (3,744 files)
 [PASS] G11  packet timing: delivered = generation + delay, lost never arrive, pending arrive after the run
 [PASS] G12  alignment flags exist only for accepted packets and their total matches the run summary
-[PASS] H01  SA and RR archived summaries are identical for all 24 main seeds
-[PASS] H02  SA and RR packet ledgers are identical for all 24 main seeds
+[PASS] H01  SA and RR archived summaries are identical for all 96 main seeds
+[PASS] H02  SA and RR packet ledgers are identical for all 96 main seeds
 [PASS] I01  RR re-run for seed 3201 matches the archived dataset
 [PASS] I02  RR re-run for seed 3202 matches the archived dataset
 [PASS] I03  RR re-run for seed 3203 matches the archived dataset
@@ -114,4 +114,76 @@ Verification suite for the stress-weighted telemetry benchmark
 [PASS] I22  RR re-run for seed 3222 matches the archived dataset
 [PASS] I23  RR re-run for seed 3223 matches the archived dataset
 [PASS] I24  RR re-run for seed 3224 matches the archived dataset
-114 / 114 checks passed in 13.4 s
+[PASS] I25  RR re-run for seed 3225 matches the archived dataset
+[PASS] I26  RR re-run for seed 3226 matches the archived dataset
+[PASS] I27  RR re-run for seed 3227 matches the archived dataset
+[PASS] I28  RR re-run for seed 3228 matches the archived dataset
+[PASS] I29  RR re-run for seed 3229 matches the archived dataset
+[PASS] I30  RR re-run for seed 3230 matches the archived dataset
+[PASS] I31  RR re-run for seed 3231 matches the archived dataset
+[PASS] I32  RR re-run for seed 3232 matches the archived dataset
+[PASS] I33  RR re-run for seed 3233 matches the archived dataset
+[PASS] I34  RR re-run for seed 3234 matches the archived dataset
+[PASS] I35  RR re-run for seed 3235 matches the archived dataset
+[PASS] I36  RR re-run for seed 3236 matches the archived dataset
+[PASS] I37  RR re-run for seed 3237 matches the archived dataset
+[PASS] I38  RR re-run for seed 3238 matches the archived dataset
+[PASS] I39  RR re-run for seed 3239 matches the archived dataset
+[PASS] I40  RR re-run for seed 3240 matches the archived dataset
+[PASS] I41  RR re-run for seed 3241 matches the archived dataset
+[PASS] I42  RR re-run for seed 3242 matches the archived dataset
+[PASS] I43  RR re-run for seed 3243 matches the archived dataset
+[PASS] I44  RR re-run for seed 3244 matches the archived dataset
+[PASS] I45  RR re-run for seed 3245 matches the archived dataset
+[PASS] I46  RR re-run for seed 3246 matches the archived dataset
+[PASS] I47  RR re-run for seed 3247 matches the archived dataset
+[PASS] I48  RR re-run for seed 3248 matches the archived dataset
+[PASS] I49  RR re-run for seed 3249 matches the archived dataset
+[PASS] I50  RR re-run for seed 3250 matches the archived dataset
+[PASS] I51  RR re-run for seed 3251 matches the archived dataset
+[PASS] I52  RR re-run for seed 3252 matches the archived dataset
+[PASS] I53  RR re-run for seed 3253 matches the archived dataset
+[PASS] I54  RR re-run for seed 3254 matches the archived dataset
+[PASS] I55  RR re-run for seed 3255 matches the archived dataset
+[PASS] I56  RR re-run for seed 3256 matches the archived dataset
+[PASS] I57  RR re-run for seed 3257 matches the archived dataset
+[PASS] I58  RR re-run for seed 3258 matches the archived dataset
+[PASS] I59  RR re-run for seed 3259 matches the archived dataset
+[PASS] I60  RR re-run for seed 3260 matches the archived dataset
+[PASS] I61  RR re-run for seed 3261 matches the archived dataset
+[PASS] I62  RR re-run for seed 3262 matches the archived dataset
+[PASS] I63  RR re-run for seed 3263 matches the archived dataset
+[PASS] I64  RR re-run for seed 3264 matches the archived dataset
+[PASS] I65  RR re-run for seed 3265 matches the archived dataset
+[PASS] I66  RR re-run for seed 3266 matches the archived dataset
+[PASS] I67  RR re-run for seed 3267 matches the archived dataset
+[PASS] I68  RR re-run for seed 3268 matches the archived dataset
+[PASS] I69  RR re-run for seed 3269 matches the archived dataset
+[PASS] I70  RR re-run for seed 3270 matches the archived dataset
+[PASS] I71  RR re-run for seed 3271 matches the archived dataset
+[PASS] I72  RR re-run for seed 3272 matches the archived dataset
+[PASS] I73  RR re-run for seed 3273 matches the archived dataset
+[PASS] I74  RR re-run for seed 3274 matches the archived dataset
+[PASS] I75  RR re-run for seed 3275 matches the archived dataset
+[PASS] I76  RR re-run for seed 3276 matches the archived dataset
+[PASS] I77  RR re-run for seed 3277 matches the archived dataset
+[PASS] I78  RR re-run for seed 3278 matches the archived dataset
+[PASS] I79  RR re-run for seed 3279 matches the archived dataset
+[PASS] I80  RR re-run for seed 3280 matches the archived dataset
+[PASS] I81  RR re-run for seed 3281 matches the archived dataset
+[PASS] I82  RR re-run for seed 3282 matches the archived dataset
+[PASS] I83  RR re-run for seed 3283 matches the archived dataset
+[PASS] I84  RR re-run for seed 3284 matches the archived dataset
+[PASS] I85  RR re-run for seed 3285 matches the archived dataset
+[PASS] I86  RR re-run for seed 3286 matches the archived dataset
+[PASS] I87  RR re-run for seed 3287 matches the archived dataset
+[PASS] I88  RR re-run for seed 3288 matches the archived dataset
+[PASS] I89  RR re-run for seed 3289 matches the archived dataset
+[PASS] I90  RR re-run for seed 3290 matches the archived dataset
+[PASS] I91  RR re-run for seed 3291 matches the archived dataset
+[PASS] I92  RR re-run for seed 3292 matches the archived dataset
+[PASS] I93  RR re-run for seed 3293 matches the archived dataset
+[PASS] I94  RR re-run for seed 3294 matches the archived dataset
+[PASS] I95  RR re-run for seed 3295 matches the archived dataset
+[PASS] I96  RR re-run for seed 3296 matches the archived dataset
+186 / 186 checks passed in 38.8 s

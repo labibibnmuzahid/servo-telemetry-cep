@@ -9,8 +9,8 @@ Reads the archive written by run_experiments.py and writes
   results/figures/fig*.pdf / .png
 
 All paired changes are 100 (M_policy,s / M_RR,s - 1) within seed s; intervals are
-95 % percentile bootstrap intervals of the mean over 20,000 resamples of the 24
-paired seeds (servo_bench/stats.py).
+95 % percentile bootstrap intervals of the mean over 20,000 resamples of the paired
+seeds, plus an exact two-sided sign test on the seeds that are not ties (servo_bench/stats.py).
 
 Usage:  python analyze.py [--data data] [--out results]
 """
@@ -69,6 +69,10 @@ def pct(x, nd=2):
 
 def ci(s, nd=2):
     return f"[{s['ci_lo']:+.{nd}f}%, {s['ci_hi']:+.{nd}f}%]"
+
+
+def fp(p):
+    return f"{p:.2g}" if p >= 1e-3 else f"{p:.1e}"
 
 
 def idt(s):
@@ -130,7 +134,8 @@ def table_main_outcomes(df, W, K):
         "Stale": raw.stale.map("{:.1f}".format),
         "Lost": raw.lost.map("{:.1f}".format),
     })
-    W.table("t1_main_outcomes", "Main benchmark outcomes averaged across 24 paired seeds (seeds 3201-3224)",
+    W.table("t1_main_outcomes", f"Main benchmark outcomes averaged across {C.N_SEEDS} paired seeds "
+            f"(seeds {C.SEEDS_MAIN[0]}-{C.SEEDS_MAIN[-1]})",
             raw, shown, "Every trial attempted exactly one packet per slot (1600 attempts per 16 s run).")
     K["main_means"] = raw.set_index("policy")[["F5", "rmse_mrad", "peak_tau_MPa", "mean_age_ms", "p99_age_ms",
                                                "accepted", "stale"]].to_dict(orient="index")
@@ -144,11 +149,13 @@ def table_paired_effects(df, W, K):
         _, r = paired(df, "main", "baseline", p, col="rmse_rad")
         rows.append({"policy": p, **{f"dF5_{k}": v for k, v in s.items()}, "dRMSE_pct_mean": r["mean"]})
         shown.append({"Policy": p, "dF5 (%)": pct(s["mean"]), "95% bootstrap interval": ci(s),
-                      "Increase / decrease / tie": idt(s), "dRMSE (%)": f"{r['mean']:+.4f}%"})
+                      "Increase / decrease / tie": idt(s), "Sign-test p": fp(s["sign_p"]),
+                      "dRMSE (%)": f"{r['mean']:+.4f}%"})
         K.setdefault("paired_vs_RR_main", {})[p] = {"dF5": s, "dRMSE_pct_mean": r["mean"]}
-    W.table("t2_paired_effects", "Paired percentage change in F5 relative to RR (main benchmark, 24 seeds)",
+    W.table("t2_paired_effects", f"Paired percentage change in F5 relative to RR (main benchmark, {C.N_SEEDS} seeds)",
             pd.DataFrame(rows), pd.DataFrame(shown),
-            "Increase / decrease / tie counts seeds where the policy's F5 is above / below / equal to RR's.")
+            "Increase / decrease / tie counts seeds where the policy's F5 is above / below / equal to RR's; "
+            "the sign test is exact, two-sided, on the seeds that are not ties.")
 
 
 def table_exponents(df, W, K):
@@ -180,7 +187,7 @@ def table_per_axis(df, W, K):
             K.setdefault("per_axis", {}).setdefault(p, {})[f"axis{i}"] = s
         rows.append(rec)
         shown.append(sh)
-    note = ("Share of total RR severity (pooled over 24 seeds): "
+    note = (f"Share of total RR severity (pooled over {C.N_SEEDS} seeds): "
             + ", ".join(f"axis {i} {100 * share[i]:.2f}%" for i in range(3)) + ".")
     W.table("t4_per_axis", "Per-axis paired change in F5 relative to RR (main benchmark)",
             pd.DataFrame(rows), pd.DataFrame(shown), note)
@@ -224,7 +231,7 @@ def table_ap(df, W, K, ap_info):
         "dF5_WS_vs_AP_lo": s_ws_ap["ci_lo"], "dF5_WS_vs_AP_hi": s_ws_ap["ci_hi"],
         "seeds_WS_above_AP": s_ws_ap["n_increase"]}])
     shown = pd.DataFrame([
-        {"Quantity": "AP target shares (axis 0/1/2), from 24 WS calibration runs",
+        {"Quantity": f"AP target shares (axis 0/1/2), from {len(C.SEEDS_CALIBRATION)} WS calibration runs",
          "Value": " / ".join(f"{v:.5f}" for v in ap_info["ap_shares_rounded_5dp"])},
         {"Quantity": "AP packets per 16 s run (axis 0/1/2)", "Value": " / ".join(f"{v:.0f}" for v in alloc)},
         {"Quantity": "AP vs RR, dF5", "Value": f"{pct(s_ap['mean'])} {ci(s_ap)}"},
@@ -281,7 +288,7 @@ def table_packet_diagnostics(df, W, K, data_dir):
         {"Quantity": "Mean abs torque-estimate error just before an axis-0 update", "RR": f"{r.abs_torque_est_err_mNm_RR:.3f} mN m",
          "WS": f"{r.abs_torque_est_err_mNm_WS:.3f} mN m"},
     ])
-    W.table("t7_packet_diagnostics", "Packet diagnostics on axis 0 (main benchmark, 24 seeds)", raw, shown,
+    W.table("t7_packet_diagnostics", f"Packet diagnostics on axis 0 (main benchmark, {C.N_SEEDS} seeds)", raw, shown,
             "A correction reinforces the twist when the change in saturated motor command caused by the update "
             "has the same sign as the true shaft twist q_m - q_l at the arrival step.")
     K["packet_diagnostics"] = raw.iloc[0].to_dict()
@@ -304,6 +311,10 @@ def table_robustness(df, W, K):
                 sh[f"{p} dF5 [95% CI]"] = f"{pct(s['mean'])} {ci(s)}"
             if p == "WS":
                 sh["WS incr. / decr. / tie"] = idt(s)
+                sh["WS sign-test p"] = fp(s["sign_p"])
+                sh["WS median"] = pct(s["median"])
+            rec[f"{p}_sign_p"] = s["sign_p"]
+            rec[f"{p}_median"] = s["median"]
             K.setdefault("robustness", {}).setdefault(label, {})[p] = s
         sh["Seeds"] = str(len(metric(df, exp, cond, "RR")))
         rows.append(rec)
@@ -325,9 +336,10 @@ def table_rho(df, W, K):
         sh0 = float((share.attempted_axis0 / share.attempted).mean())
         rows.append({"rho": rho, **{f"dF5_{k}": v for k, v in s.items()}, "axis0_request_share": sh0})
         shown.append({"rho": f"{rho:g}", "dF5 [95% CI]": f"{pct(s['mean'])} {ci(s)}",
-                      "Increase / decrease / tie": idt(s), "Axis-0 request share": f"{sh0:.4f}"})
+                      "Increase / decrease / tie": idt(s), "Sign-test p": fp(s["sign_p"]),
+                      "Axis-0 request share": f"{sh0:.4f}"})
         K.setdefault("rho_sweep", {})[f"{rho:g}"] = s
-    W.table("t9_rho_sweep", "Stress-weighting gain sweep: WS relative to RR (seeds 3201-3224)",
+    W.table("t9_rho_sweep", f"Stress-weighting gain sweep: WS relative to RR (seeds {C.SEEDS_MAIN[0]}-{C.SEEDS_MAIN[-1]})",
             pd.DataFrame(rows), pd.DataFrame(shown), "rho = 6 is the main-benchmark WS run.")
 
 
@@ -406,7 +418,7 @@ def figures(df, out, data_dir):
     fig, ax = plt.subplots(figsize=(6.2, 3.4))
     dot_whisker(ax, pols, ss, S1, seeds=ds)
     ax.set_xlabel("Paired change in F5 relative to RR (%)")
-    ax.set_title("Main benchmark: mean and 95% bootstrap interval, 24 seeds", loc="left")
+    ax.set_title(f"Main benchmark: mean and 95% bootstrap interval, {C.N_SEEDS} seeds", loc="left")
     fig.text(0.0, -0.04, "Grey points are individual seeds. SO (unguarded stress-only) is off-scale "
              "and reported in Table t2.", color=MUTED, fontsize=8)
     save(fig, out, "fig1_main_paired_effects")
@@ -463,8 +475,10 @@ def figures(df, out, data_dir):
                 ax.set_title(f"{pol} vs RR", loc="left")
             else:
                 ax.set_xlabel(f"Paired change in F5, {pol} vs RR (%)")
-    fig.text(0.0, -0.02, "Mean and 95% bootstrap interval over 24 paired seeds. The stiff-shaft panels use their "
-             "own scale.", color=MUTED, fontsize=8)
+    st_ws = paired(df, "stiff", "ds4mm", "WS")[1]
+    fig.text(0.0, -0.02, f"Mean and 95% bootstrap interval over {C.N_SEEDS} paired seeds. The stiff-shaft panels use their "
+             f"own scale. Stiff shaft, WS: median {st_ws['median']:+.1f}%, {st_ws['n_increase']} of {st_ws['n']} seeds up "
+             f"(sign test p = {st_ws['sign_p']:.2f}).", color=MUTED, fontsize=8)
     save(fig, out, "fig3_robustness")
 
     # Fig 4: per-axis effects for WS and SO-B

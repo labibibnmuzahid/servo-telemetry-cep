@@ -71,7 +71,8 @@ def simulate(cfg, return_traces: bool = False) -> dict:
     jm0, jl0, ks0 = mdl.nominal
     Rv = np.diag(np.square(C.SIGMA))
     t_ref = reference_torque(cfg.tau_ref, cfg.shaft_diameter)
-    tu_curve = torque_variance_curve(mdl.Ad_n, Rv, ks0, N + 1) if cfg.policy == "TU" else None
+    tu_curve = (np.stack([torque_variance_curve(mdl.Ad_n, Rv, ks0, N + 1, mdl.Qd_kf[i]) for i in range(C.N_AXES)])
+                if cfg.policy == "TU" else None)
     sched = Scheduler(cfg.policy, hs, cfg.rho, ks0, t_ref, cfg.ap_shares, tu_curve)
     if cfg.estimator == "reset":
         est = ResetPredictor(mdl.Ad_n, mdl.Bd_n)
