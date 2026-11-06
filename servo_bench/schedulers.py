@@ -18,7 +18,7 @@ def torque_variance_curve(Ad: np.ndarray, Rv: np.ndarray, ks: float, n_max: int,
     """Open-loop variance of the elastic torque n steps after a measurement.
 
     V(n) = c^T P_n c, c = k_s [1, 0, -1, 0], with P_0 = R_v and P_(n+1) = A_d P_n A_d^T + Q_d.
-    TU uses the per-axis Q_d,i of Eq. (10) (the delayed-KF process covariance); with Q_d = 0
+    TU uses the per-axis Q_d,i of Eq. (12) (the delayed-KF process covariance); with Q_d = 0
     the curve reduces to pure propagation of R_v.
     """
     c = ks * np.array([1.0, 0.0, -1.0, 0.0])
@@ -53,7 +53,7 @@ class Scheduler:
             self._ax = np.arange(self.V.shape[0])
 
     def stress_weight(self, xh: np.ndarray) -> np.ndarray:
-        """R_i = 1 + rho (|T_hat_i| / T_ref)^3 with T_hat_i = k_s (q_m_hat - q_l_hat) (Eq. 12)."""
+        """R_i = 1 + rho (|T_hat_i| / T_ref)^3 with T_hat_i = k_s (q_m_hat - q_l_hat) (Eq. 14)."""
         t_hat = self.ks * (xh[:, 0] - xh[:, 2])
         return 1.0 + self.rho * (np.abs(t_hat) / self.t_ref) ** 3
 

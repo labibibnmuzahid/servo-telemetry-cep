@@ -56,7 +56,7 @@ def rainflow(series) -> tuple[np.ndarray, np.ndarray]:
 
 
 def severity(ranges: np.ndarray, counts: np.ndarray, tau_ref: float, m: float) -> float:
-    """F_m contribution sum n_c (a_c / tau_ref)^m with cycle amplitude a_c = range / 2 (Eq. 14)."""
+    """F_m contribution sum n_c (a_c / tau_ref)^m with cycle amplitude a_c = range / 2 (Eq. 16)."""
     if ranges.size == 0:
         return 0.0
     return float(np.sum(counts * (0.5 * ranges / tau_ref) ** m))

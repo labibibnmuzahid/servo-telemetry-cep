@@ -171,7 +171,7 @@ draws, and the doubled-delay condition doubles the same delay draws.
 6. **Cycle amplitude** is half the rainflow range (a_c = range / 2).
 7. **Tracking RMSE** compares the load angle q_l with r_i, pooled over the three axes and every 2 ms sample.
 8. **Ties** in every argmax are broken toward the lowest axis index.
-9. **TU** propagates the measurement covariance R_v with the nominal open-loop model and the per-axis process covariance Q_d,i of the delayed Kalman filter (Eq. 10): P_(n+1) = A_d P_n A_d^T + Q_d,i, P_0 = R_v, V_i(n) = c^T P_n c. Axes with larger load pulses therefore accumulate torque uncertainty faster (validate.py, D10-D11).
+9. **TU** propagates the measurement covariance R_v with the nominal open-loop model and the per-axis process covariance Q_d,i of the delayed Kalman filter (Eq. 12): P_(n+1) = A_d P_n A_d^T + Q_d,i, P_0 = R_v, V_i(n) = c^T P_n c. Axes with larger load pulses therefore accumulate torque uncertainty faster (validate.py, D10-D11).
 10. **Stiff shaft**: the LQR is re-synthesised with the same Q and R for the 4 mm nominal plant, giving K = [4.454580, 0.176476, 0.741572, 0.189511]; predictor and filter also use the 4 mm nominal model.
 11. **AP shares** are the mean per-axis request shares of WS over calibration seeds 2201-2296, rounded to five decimals.
 12. **Packet diagnostics**: the high-torsion threshold is the 80th percentile of the true torque magnitude at accepted axis-0 arrivals under RR, pooled over the 96 main seeds. A correction reinforces the twist when the change in saturated command caused by the update has the same sign as the true shaft twist q_m - q_l.

@@ -4,7 +4,7 @@ Between arrivals both estimators propagate the nominal model under the applied
 saturated inputs (done in the simulator). They differ in what happens when a packet
 y_s sampled at step s is accepted at step j:
 
-* ResetPredictor: x_hat_j = A_d^(j-s) y_s + sum_l A_d^(j-s-1-l) B_d u_(s+l)   (Eq. 9)
+* ResetPredictor: x_hat_j = A_d^(j-s) y_s + sum_l A_d^(j-s-1-l) B_d u_(s+l)   (Eq. 10)
 * DelayedKF: an in-order Kalman filter that keeps the posterior at the generation
   step of the last accepted sample, propagates mean and covariance to s, applies the
   measurement update, then replays the known inputs from s to j.

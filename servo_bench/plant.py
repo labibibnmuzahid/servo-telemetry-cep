@@ -74,17 +74,17 @@ def lqr_gain(A: np.ndarray, B: np.ndarray, Q=C.Q_LQR, R=C.R_LQR) -> np.ndarray:
 
 
 def shear_stress(torque, shaft_diameter: float):
-    """Surface shear stress tau = 16 T / (pi d^3) [Pa] (Eq. 13)."""
+    """Surface shear stress tau = 16 T / (pi d^3) [Pa] (Eq. 15)."""
     return 16.0 * np.asarray(torque) / (np.pi * shaft_diameter ** 3)
 
 
 def reference_torque(tau_ref: float, shaft_diameter: float) -> float:
-    """T_ref = tau_ref pi d^3 / 16 [N m] (Eq. 12)."""
+    """T_ref = tau_ref pi d^3 / 16 [N m] (Eq. 14)."""
     return tau_ref * np.pi * shaft_diameter ** 3 / 16.0
 
 
 def kf_process_covariance(axis: int, jm: float, jl: float, ks: float, dt: float = C.DT) -> np.ndarray:
-    """Discretised Q_c,i = 0.4 A_i^2 E E^T + 1e-5 B B^T (Eq. 10) for the nominal model of one axis."""
+    """Discretised Q_c,i = 0.4 A_i^2 E E^T + 1e-5 B B^T (Eq. 12) for the nominal model of one axis."""
     A, B, E = continuous_matrices(jm, jl, ks)
     Qc = C.KF_PULSE_FACTOR * C.PULSE_AMP[axis] ** 2 * np.outer(E, E) + C.KF_INPUT_NOISE * np.outer(B, B)
     return van_loan(A, Qc, dt)
